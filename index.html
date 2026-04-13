@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Purpose – Two Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --colorPrimary:         #2A827B;
+    --colorPrimaryBg:       #F2FAF8;
+    --colorPrimaryBorder:   #62ABA3;
+    --colorText:            #000000;
+    --colorTextSecondary:   #5A6872;
+    --colorTextTertiary:    #9BA8B0;
+    --colorBgBase:          #F4F5F7;
+    --colorBgCard:          #FFFFFF;
+    --colorBgElevated:      #F9FAFB;
+    --colorBorder:          #D9E2E8;
+    --colorBorderSecondary: #E8E8E8;
+    --fontFamily:           'Figtree', sans-serif;
+    --fontSize:             14px;
+    --fontSizeSM:           12px;
+    --fontSizeLG:           16px;
+    --fontSizeXL:           20px;
+    --fontWeightStrong:     600;
+    --borderRadiusS:        6px;
+    --borderRadiusM:        8px;
+    --boxShadowSecondary:   0 6px 16px rgba(0,0,0,.08), 0 3px 6px -4px rgba(0,0,0,.12), 0 9px 28px 8px rgba(0,0,0,.05);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--fontFamily);
+    font-size: var(--fontSize);
+    color: var(--colorText);
+    background: var(--colorBgBase);
+    padding: 40px 32px;
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+
+  /* ── Column wrapper ── */
+  .col {
+    display: flex;
+    flex-direction: column;
+    width: 440px;
+    flex-shrink: 0;
+  }
+
+  .solution-title {
+    font-size: var(--fontSizeXL);
+    font-weight: var(--fontWeightStrong);
+    margin-bottom: 4px;
+  }
+
+  .solution-desc {
+    font-size: var(--fontSizeSM);
+    color: var(--colorTextSecondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* ══════════════════════════════════
+     SOLUTION 1 — Dropdown field
+  ══════════════════════════════════ */
+
+  .dropdown-field {
+    position: relative;
+    width: 100%;
+  }
+
+  .dropdown-trigger {
+    width: 100%;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border: 1px solid var(--colorBorder);
+    border-radius: var(--borderRadiusS);
+    background: var(--colorBgCard);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color .15s, box-shadow .15s;
+    gap: 8px;
+  }
+
+  .dropdown-trigger:hover {
+    border-color: var(--colorPrimaryBorder);
+  }
+
+  .dropdown-trigger.open {
+    border-color: var(--colorPrimaryBorder);
+    box-shadow: 0 0 0 2px var(--colorPrimaryBg);
+  }
+
+  .dropdown-trigger-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--fontSize);
+    color: var(--colorText);
+  }
+
+  .dropdown-trigger-text.placeholder {
+    color: var(--colorTextTertiary);
+  }
+
+  .dropdown-trigger-arrow {
+    flex-shrink: 0;
+    color: var(--colorTextTertiary);
+    transition: transform .2s;
+    display: flex;
+  }
+
+  .dropdown-trigger.open .dropdown-trigger-arrow {
+    transform: rotate(180deg);
+  }
+
+  /* The panel */
+  .dropdown-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--colorBgCard);
+    border: 1px solid var(--colorBorderSecondary);
+    border-radius: var(--borderRadiusM);
+    box-shadow: var(--boxShadowSecondary);
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .dropdown-panel.open { display: block; }
+
+  /* search inside panel */
+  .panel-search-wrap {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--colorBorderSecondary);
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .panel-search-wrap input {
+    width: 100%;
+    height: 32px;
+    border: 1px solid var(--colorBorder);
+    border-radius: var(--borderRadiusS);
+    padding: 0 32px 0 10px;
+    font-family: var(--fontFamily);
+    font-size: var(--fontSize);
+    color: var(--colorText);
+    outline: none;
+    background: var(--colorBgCard);
+    transition: border-color .15s;
+  }
+
+  .panel-search-wrap input:focus {
+    border-color: var(--colorPrimaryBorder);
+  }
+
+  .panel-search-wrap input::placeholder { color: var(--colorTextTertiary); }
+
+  .panel-search-icon {
+    position: absolute;
+    right: 22px;
+    color: var(--colorTextTertiary);
+    pointer-events: none;
+    display: flex;
+  }
+
+  /* list */
+  .panel-list {
+    overflow-y: auto;
+    max-height: 380px;
+  }
+
+  .panel-group-header {
+    padding: 6px 12px 4px;
+    font-size: var(--fontSizeSM);
+    font-weight: var(--fontWeightStrong);
+    color: var(--colorTextSecondary);
+    background: var(--colorBgBase);
+    border-bottom: 1px solid var(--colorBorderSecondary);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    letter-spacing: .2px;
+  }
+
+  .panel-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 9px 12px 9px 24px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--colorBorderSecondary);
+    font-size: var(--fontSize);
+    color: var(--colorText);
+    line-height: 1.35;
+    transition: background .1s;
+    gap: 8px;
+  }
+
+  .panel-item:last-child { border-bottom: none; }
+
+  .panel-item:hover { background: var(--colorPrimaryBg); }
+
+  .panel-item.selected {
+    background: #EEF6F9;
+    color: var(--colorText);
+    font-weight: 500;
+  }
+
+  .panel-item-text { flex: 1; }
+
+  .panel-item-title { color: var(--colorText); }
+
+  .panel-item-desc {
+    font-size: var(--fontSizeSM);
+    color: var(--colorTextSecondary);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .panel-item-check {
+    flex-shrink: 0;
+    color: var(--colorPrimary);
+    opacity: 0;
+    margin-top: 2px;
+  }
+
+  .panel-item.selected .panel-item-check { opacity: 1; }
+
+  .panel-empty {
+    padding: 24px 12px;
+    text-align: center;
+    color: var(--colorTextTertiary);
+    font-size: var(--fontSizeSM);
+  }
+
+  /* ══════════════════════════════════
+     SOLUTION 2 — Autocomplete input
+  ══════════════════════════════════ */
+
+  .ac-field {
+    position: relative;
+    width: 100%;
+  }
+
+  .ac-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Ghost text sits behind the real input */
+  .ac-ghost {
+    position: absolute;
+    left: 0; top: 0; right: 36px;
+    height: 36px;
+    padding: 0 0 0 12px;
+    display: flex;
+    align-items: center;
+    font-family: var(--fontFamily);
+    font-size: var(--fontSize);
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .ac-ghost-typed {
+    color: transparent; /* sits under the real input text */
+  }
+
+  .ac-ghost-completion {
+    color: var(--colorTextTertiary);
+    opacity: .6;
+  }
+
+  .ac-input-wrap input {
+    width: 100%;
+    height: 36px;
+    padding: 0 36px 0 12px;
+    border: 1px solid var(--colorBorder);
+    border-radius: var(--borderRadiusS);
+    font-family: var(--fontFamily);
+    font-size: var(--fontSize);
+    color: var(--colorText);
+    background: transparent;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* white backing so ghost doesn't bleed through border area */
+  .ac-input-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--colorBgCard);
+    border-radius: var(--borderRadiusS);
+    z-index: 0;
+  }
+
+  .ac-input-wrap input:focus {
+    border-color: var(--colorPrimaryBorder);
+    box-shadow: 0 0 0 2px var(--colorPrimaryBg);
+  }
+
+  .ac-input-wrap input::placeholder { color: var(--colorTextTertiary); }
+
+  .ac-search-icon {
+    position: absolute;
+    right: 10px;
+    color: var(--colorTextTertiary);
+    pointer-events: none;
+    display: flex;
+    z-index: 2;
+  }
+
+  .ac-hint {
+    margin-top: 5px;
+    font-size: var(--fontSizeSM);
+    color: var(--colorTextTertiary);
+    min-height: 16px;
+  }
+
+  .ac-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--colorBgCard);
+    border: 1px solid var(--colorBorderSecondary);
+    border-radius: var(--borderRadiusM);
+    box-shadow: var(--boxShadowSecondary);
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .ac-dropdown.open { display: block; }
+
+  .ac-list {
+    overflow-y: auto;
+    max-height: 400px;
+  }
+
+  /* Result items — match screenshot style: indented, bordered, plain */
+  .ac-group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 4px;
+    font-size: var(--fontSizeSM);
+    font-weight: var(--fontWeightStrong);
+    color: var(--colorTextSecondary);
+    background: var(--colorBgBase);
+    border-bottom: 1px solid var(--colorBorderSecondary);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .ac-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 9px 12px 9px 24px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--colorBorderSecondary);
+    font-size: var(--fontSize);
+    color: var(--colorText);
+    line-height: 1.4;
+    transition: background .1s;
+    gap: 8px;
+  }
+
+  .ac-item:last-child { border-bottom: none; }
+
+  .ac-item:hover { background: var(--colorPrimaryBg); }
+
+  .ac-item.selected {
+    background: #EEF6F9;
+    font-weight: 500;
+  }
+
+  .ac-item-text { flex: 1; }
+
+  .ac-item-title { color: var(--colorText); }
+  .ac-item-desc {
+    font-size: var(--fontSizeSM);
+    color: var(--colorTextSecondary);
+    margin-top: 1px;
+    line-height: 1.35;
+  }
+
+  .ac-match { color: var(--colorPrimary); font-weight: var(--fontWeightStrong); }
+
+  .ac-item-check {
+    flex-shrink: 0;
+    color: var(--colorPrimary);
+    opacity: 0;
+    margin-top: 2px;
+  }
+
+  .ac-item.selected .ac-item-check { opacity: 1; }
+
+  .ac-empty {
+    padding: 28px 12px;
+    text-align: center;
+    color: var(--colorTextTertiary);
+    font-size: var(--fontSizeSM);
+  }
+
+  /* Selected value display below input */
+  .selected-display {
+    margin-top: 8px;
+    font-size: var(--fontSizeSM);
+    color: var(--colorTextSecondary);
+    min-height: 18px;
+  }
+
+  .selected-display span {
+    color: var(--colorPrimary);
+    font-weight: var(--fontWeightStrong);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SOLUTION 1 — Dropdown (click to open)
+═══════════════════════════════════════════ -->
+<div class="col">
+  <p class="solution-title">Solution 1</p>
+  <p class="solution-desc">Click to open. Flat grouped list — no accordion, no identifiers. Titles match the UI exactly.</p>
+
+  <div class="dropdown-field" id="s1-field">
+    <div class="dropdown-trigger" id="s1-trigger">
+      <span class="dropdown-trigger-text placeholder" id="s1-label">Select trip purpose</span>
+      <span class="dropdown-trigger-arrow">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </div>
+
+    <div class="dropdown-panel" id="s1-panel">
+      <div class="panel-search-wrap">
+        <input type="text" id="s1-search" placeholder="Search…" autocomplete="off">
+        <span class="panel-search-icon">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </div>
+      <div class="panel-list" id="s1-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SOLUTION 2 — Autocomplete (type to show)
+═══════════════════════════════════════════ -->
+<div class="col">
+  <p class="solution-title">Solution 2</p>
+  <p class="solution-desc">Type to search — inline autocomplete completes the top match. Tab or → to accept. Dropdown shows all matches.</p>
+
+  <div class="ac-field" id="s2-field">
+    <div class="ac-input-wrap">
+      <!-- ghost sits behind the real input -->
+      <div class="ac-ghost" id="s2-ghost" aria-hidden="true">
+        <span class="ac-ghost-typed" id="s2-ghost-typed"></span><span class="ac-ghost-completion" id="s2-ghost-completion"></span>
+      </div>
+      <input type="text" id="s2-input" placeholder="e.g. client meeting, training, fair…" autocomplete="off" spellcheck="false">
+      <span class="ac-search-icon">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </div>
+    <div class="ac-hint" id="s2-hint"></div>
+    <div class="ac-dropdown" id="s2-dropdown">
+      <div class="ac-list" id="s2-list"></div>
+    </div>
+  </div>
+  <div class="selected-display" id="s2-display"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  DATA — titles exactly as in screenshots
+//  desc only for items whose spreadsheet row
+//  had a colored (yellow/green) explanation
+// ════════════════════════════════════════════
+const GROUPS = [
+  {
+    label: 'Internal business meetings',
+    items: [
+      {
+        title: 'Internal meetings focusing on internal company matters',
+        desc: 'e.g. Department meeting to review company results, team-building sessions or internal workshops',
+        keywords: ['internal', 'department', 'team building', 'workshop', 'company matters'],
+      },
+      {
+        title: 'Internal business meetings actively on a client project',
+        desc: 'e.g. Internal workshop preparing a proposal or solution for a specific client, planning meeting for implementation of a system at a client site',
+        keywords: ['client project', 'proposal', 'planning', 'implementation', 'internal meeting'],
+      },
+    ],
+  },
+  {
+    label: 'External business meetings',
+    items: [
+      {
+        title: 'Meetings with a client involving hands-on working activities',
+        desc: 'e.g. consulting, auditing, advisory services, project planning regarding implementation of works/services, site measurements, preparatory project assessments',
+        keywords: ['consulting', 'auditing', 'advisory', 'site visit', 'hands-on', 'client work', 'assessments'],
+      },
+      {
+        title: 'Meetings with a client not involving hands-on working activities',
+        desc: 'e.g. supplier visits for information gathering, customer relationship maintenance visits',
+        keywords: ['representational', 'supplier', 'relationship', 'visit', 'information gathering'],
+      },
+      {
+        title: 'Client-facing service delivery',
+        desc: 'e.g. Implementation of IT systems or software, implementation of organisational or restructuring projects',
+        keywords: ['IT implementation', 'software', 'restructuring', 'service delivery', 'client site'],
+      },
+      {
+        title: 'Meetings with potential clients (no concrete offer or proposal is presented)',
+        desc: null,
+        keywords: ['prospect', 'potential client', 'informational', 'exploratory'],
+      },
+      {
+        title: 'Meetings with potential clients',
+        desc: 'e.g. customer acquisition, proposal/presentations, pre-sales activity',
+        keywords: ['prospect', 'potential client', 'pre-sales', 'acquisition', 'proposal', 'presentation'],
+      },
+      {
+        title: 'Negotiating contracts or signing agreements',
+        desc: null,
+        keywords: ['contract', 'negotiation', 'signing', 'agreement', 'legal'],
+      },
+    ],
+  },
+  {
+    label: 'Conferences & offsites',
+    items: [
+      {
+        title: 'Attending a conference or fair',
+        desc: null,
+        keywords: ['conference', 'fair', 'attend', 'industry event'],
+      },
+      {
+        title: 'One-off keynote speech',
+        desc: null,
+        keywords: ['keynote', 'speaking', 'speech', 'presenter'],
+      },
+      {
+        title: 'Structured multi-day paid workshop',
+        desc: null,
+        keywords: ['workshop', 'multi-day', 'paid', 'structured'],
+      },
+      {
+        title: 'Attending a fair as a visitor',
+        desc: null,
+        keywords: ['fair', 'visitor', 'exhibition', 'expo'],
+      },
+      {
+        title: 'Exhibiting at a fair (company stand)',
+        desc: null,
+        keywords: ['fair', 'booth', 'stand', 'exhibiting', 'trade show'],
+      },
+      {
+        title: 'Attending a company offsite',
+        desc: null,
+        keywords: ['offsite', 'retreat', 'company event', 'strategy'],
+      },
+      {
+        title: 'Speaking at a conference – unpaid',
+        desc: 'Your employer covers travel expenses; no salary or fee from the organising company',
+        keywords: ['speaking', 'conference', 'presenter', 'unpaid', 'talk'],
+      },
+      {
+        title: 'Speaking at a conference – paid',
+        desc: 'Salary/compensation paid by the inviting company; travel expenses do not count as compensation',
+        keywords: ['speaking', 'paid', 'inviting company', 'presenter', 'compensation'],
+      },
+    ],
+  },
+  {
+    label: 'Training & educational',
+    items: [
+      {
+        title: 'Attending internal/external training – not compensated by host-country organisation',
+        desc: 'e.g. internal training, external course; your employer covers expenses; no fee or salary from any organisation in the destination country',
+        keywords: ['training', 'internal', 'course', 'learning', 'unpaid', 'employer covers'],
+      },
+      {
+        title: 'Attending internal/external training – paid',
+        desc: 'Salary/compensation paid by the inviting company; travel expenses do not count as compensation',
+        keywords: ['training', 'external', 'paid', 'course', 'compensation'],
+      },
+      {
+        title: 'Delivering training to internal/external participants – not compensated by host-country organisation',
+        desc: 'e.g. you train colleagues or partners abroad; your employer covers expenses',
+        keywords: ['delivering training', 'trainer', 'internal', 'external', 'employer covers'],
+      },
+      {
+        title: 'Delivering training to internal/external participants – compensated by host-country organisation',
+        desc: 'e.g. you receive a fee or salary from an organisation in the destination country for delivering the training',
+        keywords: ['delivering training', 'trainer', 'paid', 'fee', 'compensated', 'external'],
+      },
+      {
+        title: 'Academic/observational participation',
+        desc: null,
+        keywords: ['academic', 'observational', 'research participation', 'study'],
+      },
+      {
+        title: 'Execution of research deliverables for service recipient',
+        desc: null,
+        keywords: ['research', 'deliverables', 'service recipient', 'execution'],
+      },
+    ],
+  },
+  {
+    label: 'Technical & manual work',
+    items: [
+      {
+        title: 'Assembly, maintenance, repair, and installation',
+        desc: 'e.g. Installation of systems, machinery, or technical infrastructure, repair work on machinery or equipment, warranty work',
+        keywords: ['assembly', 'maintenance', 'repair', 'installation', 'machinery', 'warranty'],
+      },
+      {
+        title: 'Technical supervision – no "hands-on" work',
+        desc: 'e.g. inspection on site, technical oversight, quality control, project coordination, monitoring, commissioning after installation',
+        keywords: ['supervision', 'inspection', 'oversight', 'quality control', 'monitoring', 'commissioning'],
+      },
+      {
+        title: 'Technical support ("hands-on" intervention)',
+        desc: null,
+        keywords: ['technical support', 'hands-on', 'intervention', 'on-site'],
+      },
+      {
+        title: 'Internal product testing (R&D, no host beneficiary)',
+        desc: null,
+        keywords: ['testing', 'R&D', 'product testing', 'research and development', 'internal'],
+      },
+      {
+        title: 'Test drives as part of client service / demonstration',
+        desc: null,
+        keywords: ['test drive', 'demonstration', 'client service', 'demo'],
+      },
+    ],
+  },
+  {
+    label: 'Other',
+    items: [
+      {
+        title: 'Doing market research and exploring investment opportunities',
+        desc: null,
+        keywords: ['market research', 'investment', 'opportunities', 'due diligence'],
+      },
+      {
+        title: 'Offshore installation or energy projects in territorial waters',
+        desc: 'e.g. platform work, energy installation within a country\'s territorial waters',
+        keywords: ['offshore', 'energy', 'platform', 'territorial waters', 'installation'],
+      },
+      {
+        title: 'Offshore installation or energy projects outside territorial waters',
+        desc: 'e.g. platform work, energy installation in international waters',
+        keywords: ['offshore', 'energy', 'platform', 'international waters', 'installation'],
+      },
+      {
+        title: 'Vessel crew / maritime service',
+        desc: 'e.g. providing services on a ship',
+        keywords: ['vessel', 'maritime', 'crew', 'ship', 'seafarer'],
+      },
+      {
+        title: 'Seasonal labour',
+        desc: 'e.g. tourism sector roles such as hotel or restaurant work, construction, agriculture',
+        keywords: ['seasonal', 'labour', 'tourism', 'hotel', 'restaurant', 'agriculture', 'construction'],
+      },
+      {
+        title: 'Other, please provide: [freetext]',
+        desc: null,
+        keywords: ['other', 'specify', 'custom', 'different'],
+      },
+    ],
+  },
+];
+
+const CHECK_SVG = `<svg class="panel-item-check" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" fill="#2A827B"/><path d="M4.5 7l2 2 3-3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHECK_SVG_AC = `<svg class="ac-item-check" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" fill="#2A827B"/><path d="M4.5 7l2 2 3-3" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// ════════════════════════════════════════════
+//  SOLUTION 1 — Dropdown
+// ════════════════════════════════════════════
+let s1Selected = null;
+let s1Open = false;
+
+const s1Trigger = document.getElementById('s1-trigger');
+const s1Panel   = document.getElementById('s1-panel');
+const s1Label   = document.getElementById('s1-label');
+const s1Search  = document.getElementById('s1-search');
+const s1List    = document.getElementById('s1-list');
+
+function openS1() {
+  s1Open = true;
+  s1Trigger.classList.add('open');
+  s1Panel.classList.add('open');
+  s1Search.value = '';
+  buildS1List('');
+  setTimeout(() => s1Search.focus(), 50);
+}
+
+function closeS1() {
+  s1Open = false;
+  s1Trigger.classList.remove('open');
+  s1Panel.classList.remove('open');
+}
+
+s1Trigger.addEventListener('click', () => s1Open ? closeS1() : openS1());
+
+document.addEventListener('mousedown', e => {
+  if (s1Open && !document.getElementById('s1-field').contains(e.target)) closeS1();
+});
+
+s1Search.addEventListener('input', e => buildS1List(e.target.value));
+
+function buildS1List(q) {
+  s1List.innerHTML = '';
+  const ql = q.trim().toLowerCase();
+
+  let hasAny = false;
+
+  GROUPS.forEach(g => {
+    const matches = ql
+      ? g.items.filter(it =>
+          it.title.toLowerCase().includes(ql) ||
+          (it.desc && it.desc.toLowerCase().includes(ql)) ||
+          it.keywords.some(k => k.toLowerCase().includes(ql))
+        )
+      : g.items;
+
+    if (!matches.length) return;
+    hasAny = true;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'panel-group-header';
+    hdr.textContent = g.label;
+    s1List.appendChild(hdr);
+
+    matches.forEach(it => {
+      const div = document.createElement('div');
+      div.className = 'panel-item' + (s1Selected === it.title ? ' selected' : '');
+      const descHtml = it.desc ? `<div class="panel-item-desc">${it.desc}</div>` : '';
+      div.innerHTML = `<div class="panel-item-text"><div class="panel-item-title">${it.title}</div>${descHtml}</div>${CHECK_SVG}`;
+      div.addEventListener('mousedown', e => {
+        e.preventDefault();
+        s1Selected = it.title;
+        s1Label.textContent = it.title;
+        s1Label.classList.remove('placeholder');
+        closeS1();
+      });
+      s1List.appendChild(div);
+    });
+  });
+
+  if (!hasAny) {
+    s1List.innerHTML = `<div class="panel-empty">No matching purposes found</div>`;
+  }
+}
+
+buildS1List('');
+
+// ════════════════════════════════════════════
+//  SOLUTION 2 — Inline autocomplete + dropdown
+// ════════════════════════════════════════════
+let s2Selected = null;
+let s2DropOpen = false;
+let s2TopMatch = null; // the best matching item for inline completion
+
+const s2Input         = document.getElementById('s2-input');
+const s2Dropdown      = document.getElementById('s2-dropdown');
+const s2List          = document.getElementById('s2-list');
+const s2Display       = document.getElementById('s2-display');
+const s2GhostTyped    = document.getElementById('s2-ghost-typed');
+const s2GhostCompl    = document.getElementById('s2-ghost-completion');
+const s2Hint          = document.getElementById('s2-hint');
+
+function hl(text, q) {
+  if (!q) return text;
+  return text.replace(
+    new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+    '<span class="ac-match">$1</span>'
+  );
+}
+
+function scoreAC(it, g, ql) {
+  let s = 0;
+  if (it.title.toLowerCase().startsWith(ql)) s += 15;
+  else if (it.title.toLowerCase().includes(ql)) s += 10;
+  if (it.desc && it.desc.toLowerCase().includes(ql)) s += 4;
+  if (it.keywords.some(k => k.toLowerCase().includes(ql))) s += 3;
+  if (g.label.toLowerCase().includes(ql)) s += 2;
+  return s;
+}
+
+function updateGhost(q) {
+  if (!q.trim()) {
+    s2GhostTyped.textContent = '';
+    s2GhostCompl.textContent = '';
+    s2Hint.textContent = '';
+    s2TopMatch = null;
+    return;
+  }
+  if (s2TopMatch) {
+    const title = s2TopMatch.title;
+    const ql = q.toLowerCase();
+    const tl = title.toLowerCase();
+    if (tl.startsWith(ql)) {
+      // inline completion: show typed part + rest grayed
+      s2GhostTyped.textContent = q;
+      s2GhostCompl.textContent = title.slice(q.length);
+      s2Hint.innerHTML = `<kbd style="background:var(--colorBgBase);border:1px solid var(--colorBorder);border-radius:3px;padding:0 4px;font-size:11px;font-family:var(--fontFamily)">Tab</kbd> or <kbd style="background:var(--colorBgBase);border:1px solid var(--colorBorder);border-radius:3px;padding:0 4px;font-size:11px;font-family:var(--fontFamily)">→</kbd> to accept`;
+    } else {
+      s2GhostTyped.textContent = '';
+      s2GhostCompl.textContent = '';
+      s2Hint.textContent = '';
+    }
+  } else {
+    s2GhostTyped.textContent = '';
+    s2GhostCompl.textContent = '';
+    s2Hint.textContent = '';
+  }
+}
+
+function acceptCompletion() {
+  if (s2TopMatch && s2GhostCompl.textContent) {
+    s2Input.value = s2TopMatch.title;
+    s2GhostTyped.textContent = '';
+    s2GhostCompl.textContent = '';
+    s2Hint.textContent = '';
+    s2Selected = s2TopMatch.title;
+    s2Display.innerHTML = `Selected: <span>${s2TopMatch.title}</span>`;
+    s2Dropdown.classList.remove('open');
+    s2DropOpen = false;
+    s2Input.setSelectionRange(s2TopMatch.title.length, s2TopMatch.title.length);
+  }
+}
+
+function buildS2List(q) {
+  s2List.innerHTML = '';
+  const ql = q.trim().toLowerCase();
+
+  if (!ql) {
+    s2Dropdown.classList.remove('open');
+    s2DropOpen = false;
+    s2TopMatch = null;
+    updateGhost(q);
+    return;
+  }
+
+  // Collect scored results
+  const results = [];
+  GROUPS.forEach(g => {
+    g.items.forEach(it => {
+      const score = scoreAC(it, g, ql);
+      if (score > 0) results.push({ it, g, score });
+    });
+  });
+
+  results.sort((a, b) => b.score - a.score);
+  s2TopMatch = results.length ? results[0].it : null;
+  updateGhost(q);
+
+  s2Dropdown.classList.add('open');
+  s2DropOpen = true;
+
+  if (!results.length) {
+    s2List.innerHTML = `<div class="ac-empty">No matching purposes.<br>Try different keywords.</div>`;
+    return;
+  }
+
+  let lastGroup = null;
+  results.forEach(({ it, g }) => {
+    if (g.label !== lastGroup) {
+      const hdr = document.createElement('div');
+      hdr.className = 'ac-group-header';
+      hdr.textContent = g.label;
+      s2List.appendChild(hdr);
+      lastGroup = g.label;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'ac-item' + (s2Selected === it.title ? ' selected' : '');
+
+    const titleHtml = hl(it.title, ql);
+    const descHtml  = it.desc ? `<div class="ac-item-desc">${hl(it.desc, ql)}</div>` : '';
+
+    div.innerHTML = `
+      <div class="ac-item-text">
+        <div class="ac-item-title">${titleHtml}</div>
+        ${descHtml}
+      </div>
+      ${CHECK_SVG_AC}
+    `;
+
+    div.addEventListener('mousedown', e => {
+      e.preventDefault();
+      s2Selected = it.title;
+      s2Input.value = it.title;
+      s2GhostTyped.textContent = '';
+      s2GhostCompl.textContent = '';
+      s2Hint.textContent = '';
+      s2Dropdown.classList.remove('open');
+      s2DropOpen = false;
+      s2Display.innerHTML = `Selected: <span>${it.title}</span>`;
+    });
+
+    s2List.appendChild(div);
+  });
+}
+
+s2Input.addEventListener('input', e => buildS2List(e.target.value));
+
+// Tab or → accepts inline completion
+s2Input.addEventListener('keydown', e => {
+  if ((e.key === 'Tab' || e.key === 'ArrowRight') && s2GhostCompl.textContent) {
+    e.preventDefault();
+    acceptCompletion();
+  }
+  if (e.key === 'Escape') {
+    s2Dropdown.classList.remove('open');
+    s2DropOpen = false;
+    s2GhostTyped.textContent = '';
+    s2GhostCompl.textContent = '';
+    s2Hint.textContent = '';
+  }
+});
+
+document.addEventListener('mousedown', e => {
+  if (s2DropOpen && !document.getElementById('s2-field').contains(e.target)) {
+    s2Dropdown.classList.remove('open');
+    s2DropOpen = false;
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeS1(); }
+});
+</script>
+</body>
+</html>
