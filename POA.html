@@ -823,6 +823,7 @@
   .form-input {
     border: 1px solid var(--colorBorder); border-radius: var(--borderRadiusS);
     height: 36px; display: flex; align-items: center; padding: 0 12px; background: var(--colorBgCard);
+    position: relative;
   }
   .form-input input { border: none; outline: none; font-family: var(--fontFamily); font-size: var(--fontSize); color: var(--colorText); width: 100%; background: transparent; }
   .form-input input::placeholder { color: var(--colorTextTertiary); }
@@ -1700,17 +1701,77 @@
 
       <!-- Info note -->
       <div style="background:var(--colorInfoBg);border:1px solid #87E8FA;border-radius:var(--borderRadiusS);padding:10px 14px;display:flex;align-items:flex-start;gap:8px;margin-bottom:20px;font-size:var(--fontSizeSM);color:#1670A8;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>These details will be saved to the entity profile and used for compliance reporting.</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>These details will be saved to the entity profile and used for compliance reporting. <a href="#" onclick="return false;" style="color:#1670A8;font-weight:600;text-decoration:underline;white-space:nowrap;">Learn more in the Help Center →</a></span>
       </div>
 
-      <!-- Field 1: Company Name -->
+      <!-- Field 1: Entity Location -->
       <div class="form-field">
+        <label class="form-label">Entity Location <span class="required">*</span></label>
+        <div class="form-input" style="padding:0;overflow:hidden;">
+          <select id="poa-location" onchange="onEntityLocationChange(this.value)"
+            style="width:100%;height:100%;border:none;background:transparent;font-family:var(--fontFamily);font-size:var(--fontSize);color:var(--colorText);padding:0 12px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;">
+            <option value="" disabled selected>Select a country…</option>
+            <option value="AT">🇦🇹 Austria</option>
+            <option value="BE">🇧🇪 Belgium</option>
+            <option value="CY">🇨🇾 Cyprus</option>
+            <option value="CZ">🇨🇿 Czech Republic</option>
+            <option value="DE">🇩🇪 Germany</option>
+            <option value="DK">🇩🇰 Denmark</option>
+            <option value="EE">🇪🇪 Estonia</option>
+            <option value="ES">🇪🇸 Spain</option>
+            <option value="FI">🇫🇮 Finland</option>
+            <option value="FR">🇫🇷 France</option>
+            <option value="GB">🇬🇧 United Kingdom</option>
+            <option value="GR">🇬🇷 Greece</option>
+            <option value="HR">🇭🇷 Croatia</option>
+            <option value="HU">🇭🇺 Hungary</option>
+            <option value="IE">🇮🇪 Ireland</option>
+            <option value="IT">🇮🇹 Italy</option>
+            <option value="LT">🇱🇹 Lithuania</option>
+            <option value="LU">🇱🇺 Luxembourg</option>
+            <option value="LV">🇱🇻 Latvia</option>
+            <option value="MT">🇲🇹 Malta</option>
+            <option value="NL">🇳🇱 Netherlands</option>
+            <option value="PL">🇵🇱 Poland</option>
+            <option value="PT">🇵🇹 Portugal</option>
+            <option value="RO">🇷🇴 Romania</option>
+            <option value="SE">🇸🇪 Sweden</option>
+            <option value="SI">🇸🇮 Slovenia</option>
+            <option value="SK">🇸🇰 Slovakia</option>
+            <option value="US">🇺🇸 United States</option>
+            <option value="SG">🇸🇬 Singapore</option>
+          </select>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--colorTextTertiary)" stroke-width="2.5" style="position:absolute;right:12px;pointer-events:none;"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- Cyprus document upload (shown only when CY selected) -->
+      <div id="cyprus-upload-field" class="form-field" style="display:none;">
         <label class="form-label">
-          Company Name <span class="required">*</span>
-          <span style="font-weight:400;color:var(--colorTextTertiary);font-size:11px;margin-left:4px;">(Bedrijfsnaam)</span>
+          Supporting Document <span class="required">*</span>
+          <span style="font-weight:400;color:var(--colorTextTertiary);font-size:11px;margin-left:4px;">Required for Cyprus entities</span>
         </label>
-        <div class="form-input"><input type="text" placeholder="e.g. WorkFlex Ltd" id="poa-company-name"></div>
+        <div id="cyprus-upload-zone"
+          style="border:1.5px dashed var(--colorBorder);border-radius:var(--borderRadiusS);padding:20px 16px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;"
+          onclick="document.getElementById('cyprus-file-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--colorPrimary)';this.style.background='var(--colorPrimaryBg)';"
+          ondragleave="this.style.borderColor='var(--colorBorder)';this.style.background='';"
+          ondrop="event.preventDefault();this.style.borderColor='var(--colorBorder)';this.style.background='';handleCyprusFile(event.dataTransfer.files[0]);">
+          <input type="file" id="cyprus-file-input" accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="handleCyprusFile(this.files[0])">
+          <div id="cyprus-upload-idle">
+            <span class="mi" style="font-size:22px;color:var(--colorTextTertiary);display:block;margin-bottom:6px;">upload_file</span>
+            <div style="font-size:var(--fontSizeSM);font-weight:500;color:var(--colorText);margin-bottom:2px;">Click to upload or drag and drop</div>
+            <div style="font-size:11px;color:var(--colorTextTertiary);">PDF, PNG or JPG · max 10 MB</div>
+          </div>
+          <div id="cyprus-upload-done" style="display:none;align-items:center;justify-content:center;gap:10px;">
+            <span class="mi" style="font-size:18px;color:var(--colorPrimary);">task</span>
+            <div style="text-align:left;">
+              <div id="cyprus-file-name" style="font-size:var(--fontSizeSM);font-weight:600;color:var(--colorText);"></div>
+              <div style="font-size:11px;color:var(--colorTextTertiary);">Uploaded · <span style="color:var(--colorPrimary);cursor:pointer;text-decoration:underline;" onclick="event.stopPropagation();clearCyprusFile()">Remove</span></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Field 2: VAT Number -->
@@ -2242,16 +2303,21 @@
     document.getElementById('plc-tab-' + type).classList.add('active');
   }
 
-  /* ── POA Form ──────────────────────────────────────── */
+  /* ── Entity Details Form ───────────────────────────── */
   var poaSourceBtn = null;
+  var cyprusFile = null;
 
   function openPoaForm(btn) {
     poaSourceBtn = btn;
-    // Clear all fields
-    ['poa-company-name','poa-vat','poa-street','poa-zip','poa-country','poa-reg-number','poa-nsso','poa-sector'].forEach(function(id) {
+    // Reset fields
+    document.getElementById('poa-location').value = '';
+    ['poa-vat','poa-street','poa-zip','poa-country','poa-reg-number','poa-nsso','poa-sector'].forEach(function(id) {
       var el = document.getElementById(id);
       if (el) el.value = '';
     });
+    // Hide Cyprus upload
+    document.getElementById('cyprus-upload-field').style.display = 'none';
+    clearCyprusFile();
     document.getElementById('modal-poa-overlay').style.display = 'flex';
   }
 
@@ -2259,24 +2325,65 @@
     document.getElementById('modal-poa-overlay').style.display = 'none';
   }
 
+  function onEntityLocationChange(val) {
+    var uploadField = document.getElementById('cyprus-upload-field');
+    if (val === 'CY') {
+      uploadField.style.display = 'block';
+    } else {
+      uploadField.style.display = 'none';
+      clearCyprusFile();
+    }
+  }
+
+  function handleCyprusFile(file) {
+    if (!file) return;
+    cyprusFile = file;
+    document.getElementById('cyprus-upload-idle').style.display = 'none';
+    document.getElementById('cyprus-upload-done').style.display = 'flex';
+    document.getElementById('cyprus-file-name').textContent = file.name;
+  }
+
+  function clearCyprusFile() {
+    cyprusFile = null;
+    var input = document.getElementById('cyprus-file-input');
+    if (input) input.value = '';
+    var idle = document.getElementById('cyprus-upload-idle');
+    var done = document.getElementById('cyprus-upload-done');
+    if (idle) idle.style.display = 'block';
+    if (done) done.style.display = 'none';
+  }
+
   function submitPoaForm() {
-    var name = document.getElementById('poa-company-name').value.trim();
+    var location = document.getElementById('poa-location').value;
     var vat = document.getElementById('poa-vat').value.trim();
     var street = document.getElementById('poa-street').value.trim();
-    var country = document.getElementById('poa-country').value.trim();
     var reg = document.getElementById('poa-reg-number').value.trim();
     var sector = document.getElementById('poa-sector').value.trim();
-    if (!name || !vat || !street || !country || !reg || !sector) {
-      // highlight empty required fields briefly
-      ['poa-company-name','poa-vat','poa-street','poa-country','poa-reg-number','poa-sector'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el && !el.value.trim()) {
-          el.closest('.form-input').style.borderColor = 'var(--colorError)';
-          setTimeout(function(){ el.closest('.form-input').style.borderColor = ''; }, 2000);
-        }
-      });
-      return;
+
+    // Validate required fields
+    var valid = true;
+    if (!location) {
+      document.getElementById('poa-location').closest('.form-input').style.borderColor = 'var(--colorError)';
+      setTimeout(function(){ document.getElementById('poa-location').closest('.form-input').style.borderColor = ''; }, 2000);
+      valid = false;
     }
+    ['poa-vat','poa-street','poa-reg-number','poa-sector'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && !el.value.trim()) {
+        el.closest('.form-input').style.borderColor = 'var(--colorError)';
+        setTimeout(function(){ el.closest('.form-input').style.borderColor = ''; }, 2000);
+        valid = false;
+      }
+    });
+    // Cyprus requires document
+    if (location === 'CY' && !cyprusFile) {
+      var zone = document.getElementById('cyprus-upload-zone');
+      zone.style.borderColor = 'var(--colorError)';
+      setTimeout(function(){ zone.style.borderColor = 'var(--colorBorder)'; }, 2000);
+      valid = false;
+    }
+    if (!valid) return;
+
     closePoaForm();
     if (poaSourceBtn) {
       poaSourceBtn.className = 'poa-btn signed';
